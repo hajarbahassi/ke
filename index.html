@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Riyad Auto Prestige</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;700&family=Montserrat:wght@300;500;700&display=swap" rel="stylesheet">
+
+<style>
+body{
+    margin:0;
+    font-family:'Montserrat',sans-serif;
+    background:#111;
+    color:white;
+    transition:all .6s ease;
+}
+
+header{
+    position:fixed;
+    width:100%;
+    top:0;
+    padding:20px 40px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:rgba(0,0,0,.6);
+    backdrop-filter:blur(10px);
+    z-index:1000;
+}
+
+.logo{
+    font-family:'Bodoni Moda';
+    font-size:1.5rem;
+    letter-spacing:2px;
+}
+
+button{
+    padding:10px 20px;
+    border:none;
+    cursor:pointer;
+    font-weight:600;
+    transition:.3s;
+}
+
+.btn-switch{
+    background:#C8102E;
+    color:white;
+}
+
+.section{
+    padding:140px 10%;
+    min-height:100vh;
+}
+
+.hero{
+    text-align:center;
+}
+
+.hero h1{
+    font-family:'Bodoni Moda';
+    font-size:3rem;
+    margin-bottom:10px;
+}
+
+.car-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:40px;
+    margin-top:50px;
+}
+
+.car-card{
+    background:#1b1b1b;
+    padding:20px;
+    border-radius:10px;
+    transition:.4s;
+}
+
+.car-card:hover{
+    transform:translateY(-10px);
+}
+
+.car-card img{
+    width:100%;
+    border-radius:10px;
+}
+
+.price{
+    margin:10px 0;
+    font-weight:700;
+    color:#C8102E;
+}
+
+.btn-book{
+    background:white;
+    color:black;
+    width:100%;
+}
+
+/* Vintage */
+.vintage{
+    background:#1a1410;
+    color:#e0c9a6;
+}
+
+/* Modal */
+.modal{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,.8);
+    display:none;
+    justify-content:center;
+    align-items:center;
+}
+
+.modal-content{
+    background:white;
+    color:black;
+    padding:40px;
+    width:90%;
+    max-width:400px;
+    border-radius:15px;
+}
+
+.modal-content h2{
+    font-family:'Bodoni Moda';
+    margin-top:0;
+}
+
+.form-group{
+    margin-bottom:15px;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    border:1px solid #ccc;
+}
+
+.btn-confirm{
+    background:#C8102E;
+    color:white;
+    width:100%;
+    margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="logo">RIYAD AUTO PRESTIGE</div>
+<button class="btn-switch" onclick="toggleUniverse()">Changer Univers</button>
+</header>
+
+<section class="section hero">
+<h1>Location Automobile de Prestige</h1>
+<p>Choisissez l’élégance. Vivez l’expérience.</p>
+
+<div class="car-grid">
+
+<div class="car-card">
+<img src="https://images.unsplash.com/photo-1619767886558-efdc259cde1a" alt="">
+<h3>Skoda Octavia 2024</h3>
+<div class="price">500 DH / jour</div>
+<button class="btn-book" onclick="openModal('Skoda Octavia 2024',500)">Réserver</button>
+</div>
+
+<div class="car-card">
+<img src="https://images.unsplash.com/photo-1549921296-3a6b7d77f5e7" alt="">
+<h3>Mercedes C-Class</h3>
+<div class="price">1200 DH / jour</div>
+<button class="btn-book" onclick="openModal('Mercedes C-Class',1200)">Réserver</button>
+</div>
+
+</div>
+</section>
+
+<!-- AUDIO -->
+<div style="display:none">
+<div id="jazz-player"></div>
+<audio id="vintage-audio" loop>
+<source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-17.mp3" type="audio/mpeg">
+</audio>
+</div>
+
+<!-- MODAL -->
+<div id="bookingModal" class="modal">
+<div class="modal-content">
+<span onclick="closeModal()" style="cursor:pointer;font-size:1.5rem;float:right;">&times;</span>
+<h2 id="modalCarName"></h2>
+
+<div class="form-group">
+<label>Nom</label>
+<input type="text" id="clientName">
+</div>
+
+<div class="form-group">
+<label>Date Début</label>
+<input type="date" id="dateStart" onchange="calculateTotal()">
+</div>
+
+<div class="form-group">
+<label>Date Fin</label>
+<input type="date" id="dateEnd" onchange="calculateTotal()">
+</div>
+
+<div id="totalDisplay"></div>
+
+<button class="btn-confirm" onclick="sendWA()">Confirmer sur WhatsApp</button>
+</div>
+</div>
+
+<script>
+let selectedCar="";
+let pricePerDay=0;
+let isVintage=false;
+let jazzPlayer;
+
+var tag=document.createElement('script');
+tag.src="https://www.youtube.com/iframe_api";
+document.body.appendChild(tag);
+
+function onYouTubeIframeAPIReady(){
+    jazzPlayer=new YT.Player('jazz-player',{
+        height:'0',
+        width:'0',
+        videoId:'nv_2rz5BFDA',
+        playerVars:{autoplay:1,loop:1,playlist:'nv_2rz5BFDA'},
+        events:{onReady:(e)=>e.target.playVideo()}
+    });
+}
+
+function toggleUniverse(){
+    const body=document.body;
+    const vAudio=document.getElementById('vintage-audio');
+
+    isVintage=!isVintage;
+
+    if(isVintage){
+        body.classList.add("vintage");
+        if(jazzPlayer) jazzPlayer.pauseVideo();
+        vAudio.play();
+    }else{
+        body.classList.remove("vintage");
+        vAudio.pause();
+        if(jazzPlayer) jazzPlayer.playVideo();
+    }
+
+    window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function openModal(car,price){
+    selectedCar=car;
+    pricePerDay=price;
+    document.getElementById("modalCarName").innerText=car;
+    document.getElementById("bookingModal").style.display="flex";
+}
+
+function closeModal(){
+    document.getElementById("bookingModal").style.display="none";
+}
+
+function calculateTotal(){
+    const start=new Date(document.getElementById("dateStart").value);
+    const end=new Date(document.getElementById("dateEnd").value);
+
+    if(start && end && end>start){
+        const days=(end-start)/(1000*60*60*24);
+        const total=days*pricePerDay;
+        document.getElementById("totalDisplay").innerText=
+        "Total : "+days+" jours × "+pricePerDay+" DH = "+total+" DH";
+    }
+}
+
+function sendWA(){
+    const name=document.getElementById("clientName").value;
+    const start=document.getElementById("dateStart").value;
+    const end=document.getElementById("dateEnd").value;
+    const total=document.getElementById("totalDisplay").innerText;
+
+    if(!name||!start||!end){
+        alert("Veuillez remplir tous les champs.");
+        return;
+    }
+
+    const msg=`Bonjour Riyad Auto Prestige, je suis ${name}. Je souhaite réserver ${selectedCar} du ${start} au ${end}. ${total}`;
+    window.open(`https://wa.me/212628875855?text=${encodeURIComponent(msg)}`,'_blank');
+
+    closeModal();
+}
+</script>
+
+</body>
+</html>
